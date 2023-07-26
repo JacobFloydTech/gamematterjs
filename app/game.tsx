@@ -1,13 +1,14 @@
 "use client";
 
 import '@/public/globals.css';
-import { Bodies, Engine, Events, Render, Runner, World } from 'matter-js';
+import { Bodies, Body, Engine, Events, Render, Runner, World } from 'matter-js';
 import { useEffect, useRef } from 'react';
 
 export default function Game() {
     const svg = useRef<any>();
     const engine = useRef<Engine>(Engine.create());
-    const player = useRef<Matter.Body>();
+
+    let player: Matter.Body;
 
     var colorList = [
         '#ff7f50', '#87cefa', '#da70d6', '#32cd32', '#6495ed',
@@ -43,12 +44,26 @@ export default function Game() {
             }
             let { x, y } = getFirstEmptySpot(board);
             addPlayer(x, y);
+            document.addEventListener("keydown", (e) => handleKeyPress(e));
             Runner.run(engine.current);
             Render.run(render);
         }
 
     }, [])
+    function handleKeyPress({ key }: KeyboardEvent) {
 
+        let currVelocity = player.velocity;
+
+        switch (key) {
+            case "a":
+                Body.setVelocity(player, { x: currVelocity.x - 0.2, y: currVelocity.y })
+                break;
+            case "d":
+                Body.setVelocity(player, { x: currVelocity.x + 0.2, y: currVelocity.y })
+                break;
+        }
+
+    }
     function getFirstEmptySpot(board: number[][]) {
         let x, y;
         for (var i = 0; i < board.length; i++) {
@@ -63,7 +78,7 @@ export default function Game() {
     }
     function addPlayer(coordX: any, coordY: any) {
         let playerObject = Bodies.polygon(coordX, coordY, 10, 10, { render: { fillStyle: "#ff7f50" } });
-        player.current = playerObject;
+        player = playerObject;
         World.add(engine.current.world, [playerObject]);
     }
 
